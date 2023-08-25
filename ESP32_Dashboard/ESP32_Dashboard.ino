@@ -14,8 +14,8 @@ static const int ledPin3 = 26;
 static const int ledPin4 = 25;
 
 // Replace with your network credentials
-const char* ssid     = "xxxxx"; //replace with your ssid
-const char* password = "xxxxx"; //replace with your password
+const char* ssid     = "Room105"; //replace with your SSID
+const char* password = "indonesiaraya"; //replace with your password
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -26,13 +26,20 @@ String header;
 // Decode HTTP GET value
 String valueString1  = String(0);
 String valueString2  = String(0);
+String valueSpeed = String(0);
 String btnVal1 = String(0);
 String btnVal2 = String(0);
 String btnVal3 = String(0);
 String btnVal4 = String(0);
+int delayServo = 0;
 
 int pos1 = 0;
 int pos2 = 0;
+
+int currPos1 = 0;
+int currPos2 = 0;
+int targetPos1 = 0;
+int targetPos2 = 0;
 
 // Current time
 unsigned long currentTime = millis();
@@ -46,6 +53,8 @@ void setup() {
 
   myservo1.attach(servoPin1);  // attaches the servo on the servoPin to the servo object
   myservo2.attach(servoPin2);
+  myservo1.write(0);  // attaches the servo on the servoPin to the servo object
+  myservo2.write(0);
   pinMode(ledPin1, OUTPUT);
   pinMode(ledPin2, OUTPUT);
   pinMode(ledPin3, OUTPUT);
@@ -96,7 +105,6 @@ void loop(){
             // Display the HTML web page
             client.println("<!DOCTYPE html><html>");
             client.println("<head><meta name='viewport' content='width=device-width, initial-scale=1'>");
-            client.println("<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.2/css/all.css' integrity='sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr' crossorigin='anonymous'>");
             client.println(" <title>ESP32 IOT DASHBOARD</title>");
             // CSS 
             client.println("<style> body{font-family: arial;} img{width: 350px; height: 45px; padding-top: 7px; padding-bottom: 5px;}");
@@ -106,8 +114,10 @@ void loop(){
             //Javascript
             client.println("<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>");    
             //Header
-            client.println("</head><body><center><img src='http://absenrfid.com/img/png2.png' alt='Responsive image'><h3>ESP32 DASHBOARD</h3>");
+            client.println("</head><body><center><img src='http://usecaseiot.com/png2.png' alt='Responsive image'><h3>ESP32 DASHBOARD</h3>");
             //Slider
+            client.println("<p><span id='speed'>Speed</span>");          
+            client.println("<input type='range' min='0' max='5' class='slider' id='speedSlider1' onchange='speed(this.value)' value=\""+valueSpeed+"\"/></p>");
             client.println("<p><span id='servoPos1'></span>&deg;");          
             client.println("<input type='range' min='0' max='180' class='slider' id='servoSlider1' onchange='servo1(this.value)' value=\""+valueString1+"\"/></p>");
             client.println("<p><span id='servoPos2'></span>&deg;");          
@@ -156,7 +166,9 @@ void loop(){
             client.println("state4 = 0; btnlabel4.innerHTML = 'ON'; btn4.style.backgroundColor = 'green'; btn4.style.color = 'white'; toggled4 = true;}");
             client.println("else{state4 = 1; btnlabel4.innerHTML = 'OFF'; btn4.style.backgroundColor = 'red'; btn4.style.color = 'white'; toggled4 = false;}");
             client.println("$.get('?button4='+ state4 + '&'); {Connection: close};}");
-            
+
+            client.println("function speed(pos){");
+            client.println("$.get('/?speed=' + pos + '&'); {Connection: close};}");
             client.println("function servo1(pos){");
             client.println("$.get('/?value1=' + pos + '&'); {Connection: close};}");
             client.println("function servo2(pos){");
@@ -165,7 +177,12 @@ void loop(){
             client.println("</center></body></html>");     
             
             //GET /?value=180& HTTP/1.1
-            if(header.indexOf("GET /?value1=")>=0) {
+            if(header.indexOf("GET /?speed=")>=0) {
+              pos1 = header.indexOf('=');
+              pos2 = header.indexOf('&');
+              valueSpeed = header.substring(pos1+1, pos2); 
+            } 
+            else if(header.indexOf("GET /?value1=")>=0) {
               pos1 = header.indexOf('=');
               pos2 = header.indexOf('&');
               valueString1 = header.substring(pos1+1, pos2); 
@@ -195,13 +212,67 @@ void loop(){
               pos2 = header.indexOf('&');
               btnVal4 = header.substring(pos1+1, pos2);
             }
+
+              //Servo Speed Level
+               Serial.print("Speed Level = ");
+               Serial.println(valueSpeed);
+               if(valueSpeed == "1"){
+                  delayServo = 100;
+               }
+               else if(valueSpeed == "2"){
+                  delayServo = 70;
+               }
+               else if(valueSpeed == "3"){
+                  delayServo = 45;
+               }
+               else if(valueSpeed == "4"){
+                  delayServo = 20;
+               }
+               else if(valueSpeed == "5"){
+                  delayServo = 5;
+               }
+               else{
+                  delayServo = 0;
+               }
+              
               //Rotate the servo
-              myservo1.write(valueString1.toInt());
+              targetPos1 = valueString1.toInt();
+              if(currPos1 > targetPos1){
+                while(currPos1 > targetPos1){
+                  currPos1 -= 1;
+                  myservo1.write(currPos1);
+                  delay(delayServo);
+                }
+              }
+              else if(currPos1 < targetPos1){
+                while(currPos1 < targetPos1){
+                  currPos1 += 1;
+                  myservo1.write(currPos1);
+                  delay(delayServo);
+                }
+              }
               Serial.print("Servo 1 = ");
-              Serial.println(valueString1);
-              myservo2.write(valueString2.toInt());
+              Serial.println(targetPos1);
+              
+              targetPos2 = valueString2.toInt();
+              if(currPos2 > targetPos2){
+                while(currPos2 > targetPos2){
+                  currPos2 -= 1;
+                  myservo2.write(currPos2);
+                  delay(delayServo);
+                }
+              }
+              else if(currPos2 < targetPos2){
+                while(currPos2 < targetPos2){
+                  currPos2 += 1;
+                  myservo2.write(currPos2);
+                  delay(delayServo);
+                }
+              }
               Serial.print("Servo 2 = ");
-              Serial.println(valueString2);     
+              Serial.println(targetPos2);   
+
+              
               //LED Control
               digitalWrite(ledPin1, btnVal1.toInt()); //LED 1
               Serial.print("Channel 1 = ");

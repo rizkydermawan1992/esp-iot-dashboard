@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ESP32 IOT DASHBOARD</title>
+    <style>
+        body {
+            font-family: Arial;
+        }
+
+        img {
+            width: 350px;
+            height: 45px;
+            padding-top: 7px;
+            padding-bottom: 5px;
+        }
+
+        .slider {
+            width: 300px;
+            margin-top: 10px;
+        }
+
+        .btn-block {
+            word-spacing: 2rem;
+            padding-top: 30px;
+        }
+
+        .btn {
+            background-color: red;
+            color: white;
+            width: 47px;
+            height: 33px;
+        }
+
+        footer {
+            font-family: Arial;
+            font-weight: bold;
+            margin-top: 3rem;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <center>
+        <img src="http://usecaseiot.com/png2.png" alt="Responsive image">
+        <h3>ESP32 DASHBOARD</h3>
+        <p><span id="speed">Speed</span>
+            <input type="range" min="0" max="5" class="slider" id="speedSlider1" onchange="speed(this.value)"
+                value="{{speedValue}}" /></p>
+        <p><span id="servoPos1"></span>&deg;
+            <input type="range" min="0" max="180" class="slider" id="servoSlider1" onchange="servo1(this.value)"
+                value="{{servoValue1}}" /></p>
+        <p><span id="servoPos2"></span>&deg;
+            <input type="range" min="0" max="180" class="slider" id="servoSlider2" onchange="servo2(this.value)"
+                value="{{servoValue2}}" /></p>
+        <div class="btn-block">
+            <button id="btn1" class="btn" onclick="button1(this.value)" value="{{btnValue1}}"><span
+                    id="btnlabel1">OFF</span></button>
+            <button id="btn2" class="btn" onclick="button2(this.value)" value="{{btnValue2}}"><span
+                    id="btnlabel2">OFF</span></button>
+            <button id="btn3" class="btn" onclick="button3(this.value)" value="{{btnValue3}}"><span
+                    id="btnlabel3">OFF</span></button>
+            <button id="btn4" class="btn" onclick="button4(this.value)" value="{{btnValue4}}"><span
+                    id="btnlabel4">OFF</span></button>
+        </div>
+        <footer>Copyright &copy; 2021 Rizky Project</footer>
+    </center>
+    <script>
+        var slider1 = document.getElementById('servoSlider1');
+        var servoP1 = document.getElementById('servoPos1');
+        servoP1.innerHTML = slider1.value;
+        slider1.oninput = function () {
+            slider1.value = this.value;
+            servoP1.innerHTML = this.value;
+        }
+
+        var slider2 = document.getElementById('servoSlider2');
+        var servoP2 = document.getElementById('servoPos2');
+        servoP2.innerHTML = slider2.value;
+        slider2.oninput = function () {
+            slider2.value = this.value;
+            servoP2.innerHTML = this.value;
+        }
+
+        var btn1 = document.getElementById('btn1');
+        var btn2 = document.getElementById('btn2');
+        var btn3 = document.getElementById('btn3');
+        var btn4 = document.getElementById('btn4');
+        var btnlabel1 = document.getElementById('btnlabel1');
+        var btnlabel2 = document.getElementById('btnlabel2');
+        var btnlabel3 = document.getElementById('btnlabel3');
+        var btnlabel4 = document.getElementById('btnlabel4');
+        var toggled1 = false;
+        var toggled2 = false;
+        var toggled3 = false;
+        var toggled4 = false;
+        var state1 = 0;
+        var state2 = 0;
+        var state3 = 0;
+        var state4 = 0;
+
+        function button1(value) { // Button 1
+            if (toggled1 == false) {
+                state1 = 0;
+                btnlabel1.innerHTML = 'ON';
+                btn1.style.backgroundColor = 'green';
+                btn1.style.color = 'white';
+                toggled1 = true;
+            } else {
+                state1 = 1;
+                btnlabel1.innerHTML = 'OFF';
+                btn1.style.backgroundColor = 'red';
+                btn1.style.color = 'white';
+                toggled1 = false;
+            }
+            $.get('?button1=' + state1 + '&');
+        }
+
+        function button2(value) { // Button 2
+            if (toggled2 == false) {
+                state2 = 0;
+                btnlabel2.innerHTML = 'ON';
+                btn2.style.backgroundColor = 'green';
+                btn2.style.color = 'white';
+                toggled2 = true;
+            } else {
+                state2 = 1;
+                btnlabel2.innerHTML = 'OFF';
+                btn2.style.backgroundColor = 'red';
+                btn2.style.color = 'white';
+                toggled2 = false;
+            }
+            $.get('?button2=' + state2 + '&');
+        }
+
+        function button3(value) { // Button 3
+            if (toggled3 == false) {
+                state3 = 0;
+                btnlabel3.innerHTML = 'ON';
+                btn3.style.backgroundColor = 'green';
+                btn3.style.color = 'white';
+                toggled3 = true;
+            } else {
+                state3 = 1;
+                btnlabel3.innerHTML = 'OFF';
+                btn3.style.backgroundColor = 'red';
+                btn3.style.color = 'white';
+                toggled3 = false;
+            }
+            $.get('?button3=' + state3 + '&');
+        }
+
+        function button4(value) { // Button 4
+            if (toggled4 == false) {
+                state4 = 0;
+                btnlabel4.innerHTML = 'ON';
+                btn4.style.backgroundColor = 'green';
+                btn4.style.color = 'white';
+                toggled4 = true;
+            } else {
+                state4 = 1;
+                btnlabel4.innerHTML = 'OFF';
+                btn4.style.backgroundColor = 'red';
+                btn4.style.color = 'white';
+                toggled4 = false;
+            }
+            $.get('?button4=' + state4 + '&');
+        }
+
+        function speed(pos) {
+            $.get('/?speed=' + pos + '&');
+        }
+
+        function servo1(pos) {
+            $.get('/?value1=' + pos + '&');
+        }
+
+        function servo2(pos) {
+            $.get('/?value2=' + pos + '&');
+        }
+    </script>
+</body>
+
+</html>
